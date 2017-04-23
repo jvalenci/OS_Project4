@@ -35,7 +35,7 @@ void printSelections(){
 void createFile(){
 	//create 1G file to test  
     fprintf(stdout, "%s\n", "Please wait test file is being generated..." );
-    // system("head -c 3G </dev/urandom > /tmp/testFile.txt");
+    system("head -c 3G </dev/urandom > /tmp/testFile.txt");
     fprintf(stdout, "%s\n\n", "Test file has been created.");
 
 }
