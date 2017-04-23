@@ -33,11 +33,17 @@ void printSelections(){
 
 //creates a 1G file to test
 void createFile(){
-	//create 1G file to test  
-    fprintf(stdout, "%s\n", "Please wait test file is being generated..." );
-    system("head -c 3G </dev/urandom > /tmp/testFile.txt");
-    fprintf(stdout, "%s\n\n", "Test file has been created.");
-
+	int file;
+	file = open("/tmp/testFile.txt", O_RDONLY);
+	if(file < 0){
+		fprintf(stdout, "%s\n", "Please wait test file is being generated..." );
+		system("head -c 3G </dev/urandom > /tmp/testFile.txt");	
+		fprintf(stdout, "%s\n\n", "Test file has been created.");
+	}
+	else{
+		printf("%s\n", "testFile already exists.");
+	}
+	close(file);
 }
 
 void getUserInputAndValidate(int* input){
@@ -89,12 +95,7 @@ void firstTest(){
 		printf("%d \t %llu\n", sizePowerOf2, diff);
 		lseek(file, rand() % INT_MAX, SEEK_SET);
 	}
-
-	
-	
-
-
-
+	free(buffer);
 	close(file);
 }
 
