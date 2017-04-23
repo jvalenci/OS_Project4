@@ -78,9 +78,11 @@ void firstTest(){
 	assert(file > 0);
 
 	printf("%s\n", "1st test:");
-	printf("%s\n", "read size \t time");
+	printf("%-15s %s\n", "read size", "time");
 
-
+	//gradually increase the buffer size by powers of 2 to measure how long each read would take.
+	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached yet
+	//and force a more accurate blocksize read.
 	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX/2; sizePowerOf2 *= 2){
 		buffer = (char *) realloc(buffer, sizePowerOf2);
 		//gets the starting time before system calls with error checking
@@ -96,13 +98,13 @@ void firstTest(){
 	    }
 	    assert(readCount > -1);
 
-	    // printf("%llu\n",readCount );
+	    diff = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
 
-	    diff = 1000 * (end.tv_sec - start.tv_sec);
-
-		printf("%d \t %llu\n", sizePowerOf2, diff);
+		printf("%-15d %llu\n", sizePowerOf2, diff);
 		lseek(file, rand() % INT_MAX, SEEK_SET);
 	}
+
+	//clean up
 	free(buffer);
 	close(file);
 }
