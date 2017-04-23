@@ -73,7 +73,7 @@ void firstTest(){
 	printf("%s\n", "read size \t time");
 
 
-	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX; sizePowerOf2 *= 2){
+	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX/2; sizePowerOf2 *= 2){
 		buffer = (char *) realloc(buffer, sizePowerOf2);
 		//gets the starting time before system calls with error checking
 	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
