@@ -5,6 +5,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <limits.h>
 
 unsigned long long int rdtsc(void)
 {
@@ -30,7 +35,7 @@ void printSelections(){
 void createFile(){
 	//create 1G file to test  
     fprintf(stdout, "%s\n", "Please wait test file is being generated..." );
-    // system("head -c 1G </dev/urandom > /tmp/testFile");
+    // system("head -c 3G </dev/urandom > /tmp/testFile.txt");
     fprintf(stdout, "%s\n\n", "Test file has been created.");
 
 }
@@ -45,35 +50,113 @@ void getUserInputAndValidate(int* input){
     }
 }
 
-int main(int argc, char **argv){
-
+void firstTest(){
 	struct timespec start, end;
     long long unsigned int diff;
+	int file = 0;
+	long long unsigned int sizePowerOf2 = 1;
+	int i;
+	const int MODULUS = 1000000000; //for 1G file size
+	ssize_t readCount;
+
+	sizePowerOf2 *= 2;
+	char *buffer = (char *)malloc(sizePowerOf2);
+
+	file = open("/tmp/testFile.txt", O_RDONLY);
+	assert(file > 0);
+
+	printf("%s\n", "1st test:");
+	printf("%s\n", "read size \t time");
+
+
+	for (i = 0; i < 40; i++){
+
+		//gets the starting time before system calls with error checking
+	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
+	        printf("Error reading the time for the start of the system call loop.");
+	    }
+
+		readCount = read(file, buffer, sizePowerOf2);
+
+		//gets the ending time after system calls with error checking
+	    if (clock_gettime(CLOCK_REALTIME, &end) == -1) {
+	        printf("Error reading the time for the end of the system call loop.");
+	    }
+	    assert(readCount > -1);
+
+	    // printf("%llu\n",readCount );
+
+	    diff = 1000 * (end.tv_sec - start.tv_sec);
+
+		printf("%llu \t %llu\n", sizePowerOf2, diff);
+		sizePowerOf2 *= 2;
+		lseek(file, rand() % INT_MAX, SEEK_SET);
+		buffer = (char *) realloc(buffer, sizePowerOf2);
+	}
+
+	
+	
+
+
+
+	close(file);
+}
+
+void secondTest(){
+
+}
+
+void thirdTest(){
+
+}
+
+void fourthTest(){
+
+}
+
+void allTests(){
+	firstTest();
+	secondTest();
+	thirdTest();
+	fourthTest();
+}
+
+int main(int argc, char **argv){
+
     int userInput = 0;
+    time_t t;
+
+    srand((unsigned) time(&t));
 
     createFile();
     printSelections();
     getUserInputAndValidate(&userInput);
     
     while( userInput != 0){
-    	printf("%s\n", "works" );
+    	switch(userInput){
+    		case 1:
+    			firstTest();
+    			break;
+    		case 2:
+    			secondTest();
+    			break;
+    		case 3:
+    			thirdTest(); 
+    			break;
+    		case 4:
+    			fourthTest();
+    			break;
+    		case 5:
+    			allTests();
+    			break;
+    		default:
+    			fprintf(stderr, "%s\n", "I do not recognize this selections.");
+    	}
+
+    	//reprompt and prime userinput
     	printSelections();
     	getUserInputAndValidate(&userInput);
     }
-
-	//gets the starting time before system calls with error checking
-    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
-        printf("Error reading the time for the start of the system call loop.");
-    }
-
-
-	//gets the ending time after system calls with error checking
-    if (clock_gettime(CLOCK_REALTIME, &end) == -1) {
-        printf("Error reading the time for the end of the system call loop.");
-    }
-
-	diff = 1000 * (end.tv_sec - start.tv_sec);
-	printf("%llu \n", diff );
 
 	return 0;
 }
