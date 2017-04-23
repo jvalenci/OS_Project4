@@ -78,7 +78,7 @@ void firstTest(){
 	assert(file > 0);
 
 	printf("%s\n", "1st test:");
-	printf("%-15s %s\n", "read size", "time");
+	printf("%-17s %s\n", "readSize (bytes)", "time in nanoseconds");
 
 	//gradually increase the buffer size by powers of 2 to measure how long each read would take.
 	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached yet
@@ -100,7 +100,7 @@ void firstTest(){
 
 	    diff = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
 
-		printf("%-15d %llu\n", sizePowerOf2, diff);
+		printf("%-17d %llu\n", sizePowerOf2, diff);
 		lseek(file, rand() % INT_MAX, SEEK_SET);
 	}
 
