@@ -55,11 +55,11 @@ void discard_junk ()
 
 void getUserInputAndValidate(int* input){
 	while(scanf("%d", input) != 1){
-    	fprintf(stderr, "%s\n", "Enter a number." );
+    	fprintf(stderr, "%s\n", "Enter a number 1-5 or 0." );
 		discard_junk();
     }
     if(!(*input >= 1 && *input <= 5 || *input == 0)){
-    	fprintf(stderr, "%s\n", "Number has to be inbetween 1 and 5 or 0");
+    	fprintf(stderr, "%s\n", "Number has to be between 1 and 5 or 0");
     	getUserInputAndValidate(input);
     }
 }
