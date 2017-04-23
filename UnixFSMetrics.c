@@ -54,12 +54,10 @@ void firstTest(){
 	struct timespec start, end;
     long long unsigned int diff;
 	int file = 0;
-	long long unsigned int sizePowerOf2 = 1;
+	int sizePowerOf2 = 1;
 	int i;
-	const int MODULUS = 1000000000; //for 1G file size
 	ssize_t readCount;
 
-	sizePowerOf2 *= 2;
 	char *buffer = (char *)malloc(sizePowerOf2);
 
 	file = open("/tmp/testFile.txt", O_RDONLY);
@@ -69,8 +67,8 @@ void firstTest(){
 	printf("%s\n", "read size \t time");
 
 
-	for (i = 0; i < 40; i++){
-
+	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX; sizePowerOf2 *= 2){
+		buffer = (char *) realloc(buffer, sizePowerOf2);
 		//gets the starting time before system calls with error checking
 	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
 	        printf("Error reading the time for the start of the system call loop.");
@@ -88,10 +86,8 @@ void firstTest(){
 
 	    diff = 1000 * (end.tv_sec - start.tv_sec);
 
-		printf("%llu \t %llu\n", sizePowerOf2, diff);
-		sizePowerOf2 *= 2;
+		printf("%d \t %llu\n", sizePowerOf2, diff);
 		lseek(file, rand() % INT_MAX, SEEK_SET);
-		buffer = (char *) realloc(buffer, sizePowerOf2);
 	}
 
 	
