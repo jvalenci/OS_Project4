@@ -84,7 +84,9 @@ void firstTest(){
 	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached yet
 	//and force a more accurate blocksize read.
 	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX/2; sizePowerOf2 *= 2){
+		
 		buffer = (char *) realloc(buffer, sizePowerOf2);
+
 		//gets the starting time before system calls with error checking
 	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
 	        printf("Error reading the time for the start of the system call loop.");
