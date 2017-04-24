@@ -116,56 +116,7 @@ void secondTest(){
 }
 
 void thirdTest(){
-	const int READS_PER_SIZE = 3;
 
-	struct timespec start, end;
-    long long unsigned int diff;
-	int file = 0;
-	int readSize = 1;
-	int readIter = 0;
-	ssize_t readCount;
-
-	char *buffer = (char *)malloc(readSize);
-
-	file = open("/tmp/testFile.txt", O_RDONLY);
-	assert(file > 0);
-
-	printf("%s\n", "3rd test:");
-	printf("%-17s %s\n", "readSize (bytes)", "time in nanoseconds");
-
-	// increase the buffer/read size by powers of 2 and for each size,
-	// read the same part of the file multiple times to evaluate the cache performance.
-	for (readSize = 2; readSize < INT_MAX/2; readSize *= 2) {
-		
-		buffer = (char *) realloc(buffer, readSize);
-
-		for (readIter = 0; readIter < READS_PER_SIZE; readIter++) {
-
-			//gets the starting time before system calls with error checking
-		    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
-		        printf("Error reading the time for the start of the system call loop.");
-		    }
-
-			readCount = read(file, buffer, readSize);
-
-			//gets the ending time after system calls with error checking
-		    if (clock_gettime(CLOCK_REALTIME, &end) == -1) {
-		        printf("Error reading the time for the end of the system call loop.");
-		    }
-		    assert(readCount > -1);
-
-		    diff = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
-
-			printf("%-17d %llu\n", readSize, diff);
-		}
-
-		// keep reading from the beginning of the file
-		lseek(file, 0, SEEK_SET);
-	}
-
-	// clean up
-	free(buffer);
-	close(file);
 }
 
 void fourthTest(){
