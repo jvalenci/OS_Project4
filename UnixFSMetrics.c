@@ -27,7 +27,7 @@ void createFile(){
 	file = open("/tmp/testFile.txt", O_RDONLY);
 	if(file < 0){
 		fprintf(stdout, "%s\n", "Please wait test file is being generated..." );
-		system("head -c 3G </dev/urandom > /tmp/testFile.txt");	
+		system("head -c 3G </dev/urandom > /tmp/testFile.txt");
 		fprintf(stdout, "%s\n\n", "Test file has been created.");
 	}
 	else{
@@ -37,7 +37,7 @@ void createFile(){
 }
 
 //cleans the stdin of junk. Used in the input validation.
-void discard_junk () 
+void discard_junk ()
 {
   char c;
   while((c = getchar()) != '\n' && c != EOF)
@@ -149,9 +149,10 @@ void secondTest(){
 	close(file);
 }
 
+// increase the buffer/read size by powers of 2 and for each size,
+// read the same part of the file multiple times to evaluate the cache performance.
 void thirdTest(){
 	const int READS_PER_SIZE = 3;
-
 	struct timespec start, end;
     long long unsigned int diff;
 	int file = 0;
@@ -160,17 +161,16 @@ void thirdTest(){
 	ssize_t readCount;
 
 	char *buffer = (char *)malloc(readSize);
+	assert(buffer);
 
 	file = open("/tmp/testFile.txt", O_RDONLY);
-	assert(file > 0);
+	assert(file >= 0);
 
 	printf("%s\n", "3rd test:");
 	printf("%-17s %s\n", "readSize (bytes)", "time in nanoseconds");
 
-	// increase the buffer/read size by powers of 2 and for each size,
-	// read the same part of the file multiple times to evaluate the cache performance.
 	for (readSize = 2; readSize < INT_MAX/2; readSize *= 2) {
-		
+
 		buffer = (char *) realloc(buffer, readSize);
 
 		for (readIter = 0; readIter < READS_PER_SIZE; readIter++) {
@@ -202,8 +202,53 @@ void thirdTest(){
 	close(file);
 }
 
+// write 1 kb of zeros to a file repeatedly to extend the file and measure
+// the performance of each write. After extending the file a certain amount,
+// it is expected that an indirect pointer will need to be allocated and therefore
+// the next write will take longer than usual.
 void fourthTest(){
+#define WRITE_SIZE 1024
+	const int NUM_WRITES = 100000;
+	struct timespec start, end;
+    long long unsigned int diff;
+	int file = 0;
+	int i;
+	ssize_t writeCount;
+	// the array of zeros that will be written to the file.
+	char buffer[WRITE_SIZE] = {0};
 
+	file = open("/tmp/writeTestFile.txt", O_WRONLY | O_CREAT);
+	if (file < 0) {
+		perror("Failed to open test file for writing");
+		exit(EXIT_FAILURE);
+	}
+
+	printf("%s\n", "4th test:");
+	printf("%-17s %s\n", "kb written", "time in nanoseconds");
+
+	for (i = 1; i <= NUM_WRITES; i++) {
+		//gets the starting time before system calls with error checking
+	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
+	        printf("Error reading the time for the start of the system call loop.");
+	    }
+
+		writeCount = write(file, buffer, WRITE_SIZE);
+		fsync(file); // flush the write buffer so that data is written to the disk
+
+		//gets the ending time after system calls with error checking
+	    if (clock_gettime(CLOCK_REALTIME, &end) == -1) {
+	        printf("Error reading the time for the end of the system call loop.");
+	    }
+
+		assert(writeCount > -1);
+
+	    diff = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+
+		printf("%-17d %llu\n", i, diff);
+	}
+
+	//clean up
+	close(file);
 }
 
 void allTests(){
@@ -223,7 +268,7 @@ int main(int argc, char **argv){
     createFile();
     printSelections();
     getUserInputAndValidate(&userInput);
-    
+
     while( userInput != 0){
     	switch(userInput){
     		case 1:
@@ -233,7 +278,7 @@ int main(int argc, char **argv){
     			secondTest();
     			break;
     		case 3:
-    			thirdTest(); 
+    			thirdTest();
     			break;
     		case 4:
     			fourthTest();
