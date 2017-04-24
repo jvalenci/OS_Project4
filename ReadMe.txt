@@ -6,6 +6,3 @@ To run our program its quite simple.
    if you do not have one already.
 4. Then, a prompt will appear which will ask the user what test they want to run. The user has to pick 
    an integer 1-5 inclusive or 0 to exit.
-
-NOTE: Some of the test may take a while to complete due to the data points that were needed to 
-      answer questions. I advice ctrl+c after verifing the test works.

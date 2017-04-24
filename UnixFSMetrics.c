@@ -103,10 +103,10 @@ void firstTest(){
 	close(file);
 }
 
-//NOTE: running this method will take a long time. It was needed to have accurate prefetched data
 //I'm keep my buffer at size 1024, which is 1KB, so I can see where the slow downs are in the amount of time it takes to perform the reads.
 //While my reads perform extremely fast, meaning the data is already prefetched. The slow downs indicated that it need to refill
-//the buffer of prefetched data. This will read the entire 3G file 1KB at a time.
+//the buffer of prefetched data. I made the test where I read a 1KB block 100 times, so the test wouldn't take all day to run. This test sample was 
+//enought to get the results I needed.
 void secondTest(){
 	struct timespec start, end;
     long long unsigned int diff;
@@ -124,7 +124,7 @@ void secondTest(){
 	printf("%s\n", "2nd test:");
 	printf("%-17s %s\n", "byte read", "time in nanoseconds");
 
-	for (i = 0; readCount != 0 ; i += bufferCount){
+	for (i = 0; i <= 102400 ; i += bufferCount){
 
 		//gets the starting time before system calls with error checking
 	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
