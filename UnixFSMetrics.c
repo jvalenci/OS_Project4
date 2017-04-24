@@ -69,10 +69,10 @@ void firstTest(){
     long long unsigned int diff;
 	int file = 0;
 	int sizePowerOf2 = 1;
-	int i;
 	ssize_t readCount;
 
 	char *buffer = (char *)malloc(sizePowerOf2);
+	assert(buffer);
 
 	file = open("/tmp/testFile.txt", O_RDONLY);
 	assert(file > 0);
@@ -81,10 +81,10 @@ void firstTest(){
 	printf("%-17s %s\n", "readSize (bytes)", "time in nanoseconds");
 
 	//gradually increase the buffer size by powers of 2 to measure how long each read would take.
-	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached yet
+	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached blocks yet
 	//and force a more accurate blocksize read.
 	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX/2; sizePowerOf2 *= 2){
-		
+
 		buffer = (char *) realloc(buffer, sizePowerOf2);
 
 		//gets the starting time before system calls with error checking
@@ -111,8 +111,51 @@ void firstTest(){
 	close(file);
 }
 
+//I'm keep my buffer at size 1 so I can see where the slow downs are in the amount of time it takes to perform the reads.
+//While my reads perform extremely fast that means the data is already prefetched. The slow downs indicated that it need to refill
+//the buffer
 void secondTest(){
+	struct timespec start, end;
+    long long unsigned int diff;
+	int file = 0;
+	int i;
+	ssize_t readCount;
+	int bufferCount = 1024;
 
+	char *buffer = (char *)malloc(bufferCount);
+	assert(buffer);
+
+	file = open("/tmp/testFile.txt", O_RDONLY);
+	assert(file > 0);
+
+	printf("%s\n", "2nd test:");
+	printf("%-17s %s\n", "byte read", "time in nanoseconds");
+
+	//gradually increase the buffer size by powers of 2 to measure how long each read would take.
+	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached blocks yet
+	//and force a more accurate blocksize read.
+	for (i = 0; readCount != 0 ; i += bufferCount){
+
+		//gets the starting time before system calls with error checking
+	    if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
+	        printf("Error reading the time for the start of the system call loop.");
+	    }
+
+		readCount = read(file, buffer, bufferCount);
+
+		//gets the ending time after system calls with error checking
+	    if (clock_gettime(CLOCK_REALTIME, &end) == -1) {
+	        printf("Error reading the time for the end of the system call loop.");
+	    }
+	    assert(readCount > -1);
+
+	    diff = 1000000000 * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+
+		printf("%-17d %llu\n", i + bufferCount, diff);
+	}
+
+	free(buffer);
+	close(file);
 }
 
 void thirdTest(){
