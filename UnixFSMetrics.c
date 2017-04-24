@@ -21,7 +21,7 @@ unsigned long long int rdtsc(void)
    return ((unsigned long long)a) | (((unsigned long long)d) << 32);;
 }
 
-//prints the test choices
+//prints the test choices for the prompt
 void printSelections(){
 	fprintf(stdout, "%s\n", "choose which test you want to perform. Enter 0 to exit" );
     fprintf(stdout, "%s\n", "1. How big is the block size used by the file system to read data?" );
@@ -31,7 +31,7 @@ void printSelections(){
     fprintf(stdout, "%s\n", "5. All of the above" );
 }
 
-//creates a 1G file to test
+//creates a 3G file to run various test and allowing plenty of room.
 void createFile(){
 	int file;
 	file = open("/tmp/testFile.txt", O_RDONLY);
@@ -46,6 +46,7 @@ void createFile(){
 	close(file);
 }
 
+//cleans the stdin of junk. Used in the input validation.
 void discard_junk () 
 {
   char c;
@@ -53,6 +54,7 @@ void discard_junk ()
     ;
 }
 
+//validates the user input. user input can only be 1-5 or 0 to quit.
 void getUserInputAndValidate(int* input){
 	while(scanf("%d", input) != 1){
     	fprintf(stderr, "%s\n", "Enter a number 1-5 or 0." );
@@ -64,6 +66,9 @@ void getUserInputAndValidate(int* input){
     }
 }
 
+//gradually increase the buffer size by powers of 2 to measure how long each read would take.
+//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached blocks yet
+//and force a more accurate blocksize read by avoiding misreads of prefetched data.
 void firstTest(){
 	struct timespec start, end;
     long long unsigned int diff;
@@ -80,9 +85,6 @@ void firstTest(){
 	printf("%s\n", "1st test:");
 	printf("%-17s %s\n", "readSize (bytes)", "time in nanoseconds");
 
-	//gradually increase the buffer size by powers of 2 to measure how long each read would take.
-	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached blocks yet
-	//and force a more accurate blocksize read.
 	for (sizePowerOf2 = 2; sizePowerOf2 < INT_MAX/2; sizePowerOf2 *= 2){
 
 		buffer = (char *) realloc(buffer, sizePowerOf2);
@@ -111,9 +113,10 @@ void firstTest(){
 	close(file);
 }
 
-//I'm keep my buffer at size 1 so I can see where the slow downs are in the amount of time it takes to perform the reads.
-//While my reads perform extremely fast that means the data is already prefetched. The slow downs indicated that it need to refill
-//the buffer
+//NOTE: running this method will take a long time. It was needed to have accurate prefetched data
+//I'm keep my buffer at size 1024, which is 1KB, so I can see where the slow downs are in the amount of time it takes to perform the reads.
+//While my reads perform extremely fast, meaning the data is already prefetched. The slow downs indicated that it need to refill
+//the buffer of prefetched data. This will read the entire 3G file 1KB at a time.
 void secondTest(){
 	struct timespec start, end;
     long long unsigned int diff;
@@ -131,9 +134,6 @@ void secondTest(){
 	printf("%s\n", "2nd test:");
 	printf("%-17s %s\n", "byte read", "time in nanoseconds");
 
-	//gradually increase the buffer size by powers of 2 to measure how long each read would take.
-	//At the same time I'm repositioning the file desc pointer to a random position, where the OS hasn't cached blocks yet
-	//and force a more accurate blocksize read.
 	for (i = 0; readCount != 0 ; i += bufferCount){
 
 		//gets the starting time before system calls with error checking
@@ -154,6 +154,7 @@ void secondTest(){
 		printf("%-17d %llu\n", i + bufferCount, diff);
 	}
 
+	//clean up
 	free(buffer);
 	close(file);
 }
@@ -202,7 +203,7 @@ int main(int argc, char **argv){
     			allTests();
     			break;
     		default:
-    			fprintf(stderr, "%s\n", "I do not recognize this selections.");
+    			fprintf(stderr, "%s\n", "I do not recognize this selection.");
     	}
 
     	//reprompt and prime userinput
