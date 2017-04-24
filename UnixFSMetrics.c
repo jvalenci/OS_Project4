@@ -11,16 +11,6 @@
 #include <fcntl.h>
 #include <limits.h>
 
-unsigned long long int rdtsc(void)
-{
-   unsigned long long int x;
-   unsigned a, d;
- 
-   __asm__ volatile("rdtsc" : "=a" (a), "=d" (d));
- 
-   return ((unsigned long long)a) | (((unsigned long long)d) << 32);;
-}
-
 //prints the test choices for the prompt
 void printSelections(){
 	fprintf(stdout, "%s\n", "choose which test you want to perform. Enter 0 to exit" );
